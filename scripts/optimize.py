@@ -170,17 +170,47 @@ def optimize_geom(gnode, gi):
     assert tex.x_size == crop_w
     assert tex.y_size == crop_h
 
-    # Transform the UVs.
+    # Now we need to either move the vertices or transform the UVs in order to
+    # compensate for the cropped image.
     uv_pos = core.Vec2(crop_l / (width - 1.0), (height - crop_b) / (height - 1.0))
-    uv_scale = core.Vec2((width - 1.0) / (crop_w - 1.0), (height - 1.0) / (crop_h - 1.0))
+    uv_scale = core.Vec2((crop_w - 1.0) / (width - 1.0), (crop_h - 1.0) / (height - 1.0))
 
-    rewriter = core.GeomVertexRewriter(gnode.modify_geom(gi).modify_vertex_data(), stage.get_texcoord_name())
-    while not rewriter.is_at_end():
-        uv = core.Point2(rewriter.get_data2())
-        uv -= uv_pos
-        uv.componentwise_mult(uv_scale)
-        rewriter.set_data2(uv)
-    rewriter = None
+    vertex_data = gnode.modify_geom(gi).modify_vertex_data()
+
+    uv_to_vtx = {}
+    vtx_reader = core.GeomVertexReader(vertex_data, 'vertex')
+    uv_reader = core.GeomVertexReader(vertex_data, stage.texcoord_name)
+    while not vtx_reader.is_at_end() and not uv_reader.is_at_end():
+        uv = uv_reader.get_data2()
+        vtx = core.LPoint3(vtx_reader.get_data3())
+        uv_to_vtx[tuple(uv)] = vtx
+    vtx_reader = None
+    uv_reader = None
+
+    if (0, 0) in uv_to_vtx and (1, 1) in uv_to_vtx:
+        # Crop the card itself, making it smaller, reducing overdraw.
+        card_pos = uv_to_vtx[(0, 0)]
+        card_size = uv_to_vtx[(1, 1)] - uv_to_vtx[(0, 0)]
+
+        rewriter = core.GeomVertexRewriter(vertex_data, 'vertex')
+        uv_reader = core.GeomVertexReader(vertex_data, stage.texcoord_name)
+        while not rewriter.is_at_end() and not uv_reader.is_at_end():
+            vtx = rewriter.get_data3()
+            uv = core.Point2(uv_reader.get_data2())
+            uv.componentwise_mult(uv_scale)
+            uv += uv_pos
+            rewriter.set_data3(uv[0] * card_size[0] + card_pos[0], uv[1] * card_size[1] + card_pos[1], vtx.z)
+        rewriter = None
+    else:
+        # Transform the UVs.
+        rewriter = core.GeomVertexRewriter(gnode.modify_geom(gi).modify_vertex_data(), stage.get_texcoord_name())
+        while not rewriter.is_at_end():
+            uv = core.Point2(rewriter.get_data2())
+            uv -= uv_pos
+            uv.x /= uv_scale.x
+            uv.y /= uv_scale.y
+            rewriter.set_data2(uv)
+        rewriter = None
 
     return True
 
