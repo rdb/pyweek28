@@ -16,6 +16,7 @@ class Hobot:
         self.model.set_scale(HOBOT_SCALE)
         self.model.set_y(-0.45)
         self.model.set_z(50)
+        self.facing = 1.0
 
         self.move_control = self.model.get_anim_control('move_forward')
 
@@ -27,7 +28,8 @@ class Hobot:
 
         if move_x:
             self.speed += move_x * self.acceleration * dt
-            self.model.set_sx(-HOBOT_SCALE if move_x > 0 else HOBOT_SCALE)
+            self.facing = 1 if move_x > 0 else -1
+            self.model.set_sx(self.facing * -HOBOT_SCALE)
         elif self.speed > 0:
             self.speed = max(0, self.speed - self.deceleration * dt)
         elif self.speed < 0:
@@ -41,7 +43,7 @@ class Hobot:
 
             self.model.set_x(self.model.get_x() + self.speed * dt)
 
-            self.move_control.set_play_rate(abs(self.speed) * 4.0)
+            self.move_control.set_play_rate(self.speed * self.facing * 4.0)
 
             if not self.move_control.playing:
                 self.move_control.loop(False)
