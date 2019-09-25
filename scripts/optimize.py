@@ -23,12 +23,19 @@ def optimize_geom(gnode, gi):
         # Nothing to optimize.
         return False
 
+    changed = False
+
     stage = tex_attrib.get_on_stage(0)
     tex = tex_attrib.get_on_texture(stage)
     if tex.wrap_u == core.SamplerState.WM_repeat:
         tex.wrap_u = core.SamplerState.WM_clamp
+        changed = True
     if tex.wrap_v == core.SamplerState.WM_repeat:
         tex.wrap_v = core.SamplerState.WM_clamp
+        changed = True
+
+    if changed:
+        print(f"{tex.name}: wrap mode changed to clamp")
 
     img = core.PNMImage()
     img.set_color_space(core.CS_sRGB)
@@ -44,7 +51,7 @@ def optimize_geom(gnode, gi):
             return True
         else:
             # Nothing else to do.
-            return False
+            return changed
 
     # Crop the image.
     width, height = img.size
@@ -79,13 +86,14 @@ def optimize_geom(gnode, gi):
             img.remove_alpha()
             tex.load(img)
             tex.format = core.Texture.F_srgb
+            tex.wrap_u = core.SamplerState.WM_clamp
+            tex.wrap_v = core.SamplerState.WM_clamp
+            tex.wrap_w = core.SamplerState.WM_clamp
 
             if transp and transp.mode != core.TransparencyAttrib.M_off:
                 state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_off))
                 gnode.set_geom_state(gi, state)
             return True
-
-    changed = False
 
     # Premultiply alpha for higher-quality blending.
     transp = state.get_attrib(core.TransparencyAttrib)
@@ -93,7 +101,9 @@ def optimize_geom(gnode, gi):
         print(f"{tex.name}: premultiplying alpha")
         img.premultiply_alpha()
         prev_format = tex.format
+        prev_sampler = core.SamplerState(tex.default_sampler)
         tex.load(img)
+        tex.default_sampler = prev_sampler
         tex.format = prev_format
         state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_premultiplied_alpha))
         gnode.set_geom_state(gi, state)
@@ -137,13 +147,21 @@ def optimize_geom(gnode, gi):
         new_img.alpha_fill(0)
     new_img.copy_sub_image(img, 0, 0, crop_l, crop_t, crop_w, crop_h)
     prev_format = tex.format
+    prev_sampler = core.SamplerState(tex.default_sampler)
     tex.load(new_img)
     tex.format = prev_format
+    tex.default_sampler = prev_sampler
 
     if crop_w < width:
         tex.wrap_u = core.SamplerState.WM_border_color
+    elif tex.wrap_u == core.SamplerState.WM_repeat:
+        tex.wrap_u = core.SamplerState.WM_clamp
+
     if crop_h < height:
         tex.wrap_v = core.SamplerState.WM_border_color
+    elif tex.wrap_v == core.SamplerState.WM_repeat:
+        tex.wrap_v = core.SamplerState.WM_clamp
+
     tex.border_color = (0, 0, 0, 0)
 
     assert tex.x_size == crop_w
