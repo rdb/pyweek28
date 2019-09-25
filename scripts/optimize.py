@@ -18,12 +18,16 @@ def is_image_fully_opaque(img):
 def optimize_geom(gnode, gi):
     state = gnode.get_geom_state(gi)
 
+    changed = False
+
+    if gnode.get_geom(gi).bounds_type != core.BoundingVolume.BT_box:
+        gnode.modify_geom(gi).bounds_type = core.BoundingVolume.BT_box
+        changed = True
+
     tex_attrib = state.get_attrib(core.TextureAttrib)
     if not tex_attrib or tex_attrib.get_num_on_stages() == 0:
         # Nothing to optimize.
-        return False
-
-    changed = False
+        return changed
 
     stage = tex_attrib.get_on_stage(0)
     tex = tex_attrib.get_on_texture(stage)
@@ -33,9 +37,6 @@ def optimize_geom(gnode, gi):
     if tex.wrap_v == core.SamplerState.WM_repeat:
         tex.wrap_v = core.SamplerState.WM_clamp
         changed = True
-
-    if changed:
-        print(f"{tex.name}: wrap mode changed to clamp")
 
     img = core.PNMImage()
     img.set_color_space(core.CS_sRGB)
@@ -105,7 +106,9 @@ def optimize_geom(gnode, gi):
         tex.load(img)
         tex.default_sampler = prev_sampler
         tex.format = prev_format
-        state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_premultiplied_alpha))
+
+        #XXX there is no M_premultiplied_dual; this will have to suffice.
+        state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_dual))
         gnode.set_geom_state(gi, state)
         changed = True
 

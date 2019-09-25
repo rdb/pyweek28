@@ -16,10 +16,10 @@ def view_bam(path):
 
     base = ShowBase()
     base.render.attach_new_node(node)
-    base.render.set_two_sided(True)
 
     base.disable_mouse()
     base.cam.node().set_lens(lens)
+    base.camLens = lens
 
     base.run()
 
