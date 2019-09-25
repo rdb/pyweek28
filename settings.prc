@@ -9,3 +9,6 @@ framebuffer-srgb true
 
 # We don't need culling
 view-frustum-cull false
+
+# Smoother animations
+interpolate-frames true
