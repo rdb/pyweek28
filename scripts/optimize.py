@@ -15,6 +15,20 @@ def is_image_fully_opaque(img):
     return True
 
 
+def is_image_alpha_binary(img):
+    if not img.has_alpha():
+        return True
+
+    histogram = core.PNMImageHeader.Histogram()
+    img.make_histogram(histogram)
+
+    for pixel in histogram.get_pixels():
+        if pixel.get_alpha() > 2 and pixel.get_alpha() < 252:
+            return False
+
+    return True
+
+
 def optimize_geom(gnode, gi):
     state = gnode.get_geom_state(gi)
 
@@ -99,7 +113,6 @@ def optimize_geom(gnode, gi):
     # Premultiply alpha for higher-quality blending.
     transp = state.get_attrib(core.TransparencyAttrib)
     if transp and transp.mode == core.TransparencyAttrib.M_alpha:
-        print(f"{tex.name}: premultiplying alpha")
         img.premultiply_alpha()
         prev_format = tex.format
         prev_sampler = core.SamplerState(tex.default_sampler)
@@ -107,8 +120,15 @@ def optimize_geom(gnode, gi):
         tex.default_sampler = prev_sampler
         tex.format = prev_format
 
-        #XXX there is no M_premultiplied_dual; this will have to suffice.
-        state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_dual))
+        # Check if this has binary alpha.
+        if is_image_alpha_binary(img):
+            print(f"{tex.name}: premultiplying alpha and setting to binary")
+            state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_binary))
+        else:
+            print(f"{tex.name}: premultiplying alpha and setting to dual")
+            #XXX there is no M_premultiplied_dual; this will have to suffice.
+            state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_dual))
+
         gnode.set_geom_state(gi, state)
         changed = True
 
