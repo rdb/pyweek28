@@ -134,28 +134,28 @@ def optimize_geom(gnode, gi):
 
     # Make sure that the crop region is power-of-two, because why not.
     crop_w = crop_r - crop_l
-    pad_x = core.Texture.up_to_power_2(crop_w) - crop_w
-    pad_l = pad_x // 2
-    pad_r = pad_x - pad_l
-    crop_l -= pad_l
-    crop_r += pad_r
-    if crop_l < 0:
-        crop_r += -crop_l
-        crop_l = 0
-    crop_w = crop_r - crop_l
-    assert core.Texture.up_to_power_2(crop_w) == crop_w
+    #pad_x = core.Texture.up_to_power_2(crop_w) - crop_w
+    #pad_l = pad_x // 2
+    #pad_r = pad_x - pad_l
+    #crop_l -= pad_l
+    #crop_r += pad_r
+    #if crop_l < 0:
+    #    crop_r += -crop_l
+    #    crop_l = 0
+    #crop_w = crop_r - crop_l
+    #assert core.Texture.up_to_power_2(crop_w) == crop_w
 
     crop_h = crop_b - crop_t
-    pad_y = core.Texture.up_to_power_2(crop_h) - crop_h
-    pad_t = pad_y // 2
-    pad_b = pad_y - pad_t
-    crop_t -= pad_t
-    crop_b += pad_b
-    crop_h = crop_b - crop_t
-    if crop_t < 0:
-        crop_b += -crop_t
-        crop_t = 0
-    assert core.Texture.up_to_power_2(crop_h) == crop_h
+    #pad_y = core.Texture.up_to_power_2(crop_h) - crop_h
+    #pad_t = pad_y // 2
+    #pad_b = pad_y - pad_t
+    #crop_t -= pad_t
+    #crop_b += pad_b
+    #crop_h = crop_b - crop_t
+    #if crop_t < 0:
+    #    crop_b += -crop_t
+    #    crop_t = 0
+    #assert core.Texture.up_to_power_2(crop_h) == crop_h
 
     # Make sure the cropped region isn't bigger than the original image.
     if crop_w * crop_h >= width * height:
@@ -169,10 +169,19 @@ def optimize_geom(gnode, gi):
     if new_img.has_alpha():
         new_img.alpha_fill(0)
     new_img.copy_sub_image(img, 0, 0, crop_l, crop_t, crop_w, crop_h)
-    prev_format = tex.format
+
     prev_sampler = core.SamplerState(tex.default_sampler)
-    tex.load(new_img)
-    tex.format = prev_format
+
+    if is_image_fully_opaque(new_img):
+        print(f"{tex.name}: fully opaque after crop, removing alpha channel")
+        new_img.remove_alpha()
+        tex.load(new_img)
+        tex.format = core.Texture.F_srgb
+    else:
+        prev_format = tex.format
+        tex.load(new_img)
+        tex.format = prev_format
+
     tex.default_sampler = prev_sampler
 
     if crop_w < width:
@@ -207,7 +216,7 @@ def optimize_geom(gnode, gi):
     vtx_reader = None
     uv_reader = None
 
-    if (0, 0) in uv_to_vtx and (1, 1) in uv_to_vtx:
+    if False and (0, 0) in uv_to_vtx and (1, 1) in uv_to_vtx:
         # Crop the card itself, making it smaller, reducing overdraw.
         card_pos = uv_to_vtx[(0, 0)]
         card_size = uv_to_vtx[(1, 1)] - uv_to_vtx[(0, 0)]
@@ -221,6 +230,12 @@ def optimize_geom(gnode, gi):
             uv += uv_pos
             rewriter.set_data3(uv[0] * card_size[0] + card_pos[0], uv[1] * card_size[1] + card_pos[1], vtx.z)
         rewriter = None
+
+        # We can remove transparency if we cropped it to the opaque part.
+        if tex.format == core.Texture.F_srgb:
+            print("Removing transparency")
+            state = state.set_attrib(core.TransparencyAttrib.make(core.TransparencyAttrib.M_off))
+            gnode.set_geom_state(gi, state)
     else:
         # Transform the UVs.
         rewriter = core.GeomVertexRewriter(gnode.modify_geom(gi).modify_vertex_data(), stage.get_texcoord_name())
