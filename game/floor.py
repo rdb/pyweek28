@@ -95,6 +95,19 @@ class FloorBase:#(FSM):
         bone.set_pos(-100, -100, -100)
         self.hobot.unlock()
 
+    def adjust_to_bounds(self, x, y, bounds):
+        if x < bounds[0]:
+            x = bounds[0]
+        elif x > bounds[1]:
+            x = bounds[1]
+
+        if y < bounds[2]:
+            y = bounds[2]
+        elif y > bounds[3]:
+            y = bounds[3]
+
+        return x, y
+
     def process_input(self, input, dt):
         if self.hobot.locked:
             return
@@ -103,15 +116,8 @@ class FloorBase:#(FSM):
         hobot_model = self.hobot.model
         hobot_pos = hobot_model.get_pos()
 
-        if hobot_pos.x < self.boundaries[0]:
-            hobot_model.set_x(self.boundaries[0])
-        elif hobot_pos.x > self.boundaries[1]:
-            hobot_model.set_x(self.boundaries[1])
-
-        if hobot_pos.y < self.boundaries[2]:
-            hobot_model.set_y(self.boundaries[2])
-        elif hobot_pos.y > self.boundaries[3]:
-            hobot_model.set_y(self.boundaries[3])
+        x, y = self.adjust_to_bounds(hobot_pos.x, hobot_pos.y, self.boundaries)
+        hobot_model.set_pos(x, y, hobot_pos.z)
 
         self.check_interactions()
 

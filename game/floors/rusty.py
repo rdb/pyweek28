@@ -1,4 +1,4 @@
-from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, ActorInterval
+from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait
 
 from ..floor import FloorBase
 

@@ -2,7 +2,6 @@ from direct.actor.Actor import Actor
 from panda3d import core
 
 
-HOBOT_SCALE = 0.18
 MOVE_Y_SPEED = 0.2
 
 
@@ -78,7 +77,7 @@ class Hobot:
     def face(self, dir):
         if dir:
             self.facing = 1 if dir > 0 else -1
-            self.model.set_sz(self.facing * -HOBOT_SCALE)
+            self.model.set_sz(self.facing * -self.model.get_sx())
 
     def process_input(self, input, dt):
         if self.locked:
