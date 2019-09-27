@@ -79,7 +79,7 @@ class Hobot:
             self.facing = 1 if dir > 0 else -1
             self.model.set_sz(self.facing * -self.model.get_sx())
 
-    def process_input(self, input, dt):
+    def process_input(self, input, dt, level):
         if self.locked:
             return
 
@@ -97,8 +97,10 @@ class Hobot:
         elif self.speed < 0:
             self.speed = min(0, self.speed + self.deceleration * dt)
 
+        delta = core.Vec2(0, 0)
+
         if move_y:
-            self.model.set_y(self.model.get_y() + move_y * dt * MOVE_Y_SPEED)
+            delta.y = move_y * dt * MOVE_Y_SPEED
 
         if self.speed != 0:
             if self.speed > self.max_speed:
@@ -106,7 +108,8 @@ class Hobot:
             elif self.speed < -self.max_speed:
                 self.speed = -self.max_speed
 
-            self.model.set_x(self.model.get_x() + self.speed * dt)
+            delta.x = self.speed * dt
+            pos_changed = True
 
             self.move_control.set_play_rate(self.speed * self.facing * 4.0)
 
@@ -115,3 +118,8 @@ class Hobot:
 
         elif self.move_control.playing:
             self.move_control.stop()
+
+        if delta.length_squared() > 0:
+            old_pos = self.model.get_pos()
+            new_pos = level.adjust_move(old_pos.xy, delta)
+            self.model.set_pos(core.LPoint3(new_pos, old_pos.z))

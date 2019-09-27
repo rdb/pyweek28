@@ -1,28 +1,35 @@
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, ActorInterval
 #from direct.fsm.FSM import FSM
+from panda3d.core import PNMImage, Filename, Vec2
 
 from .hobot import Hobot
 
 
 class FloorBase:#(FSM):
-    # l, r, b, t
-    boundaries = (-0.6, 0.6, -0.5, -0.26)
 
-    def __init__(self, parent, bamfile):
-        actor = Actor(bamfile)
+    def __init__(self, parent):
+        actor = Actor(self.model_path)
         actor.set_two_sided(True)
         actor.reparent_to(parent)
         print(actor.get_anim_names())
         actor.list_joints()
         self.actor = actor
 
+        if self.walkable_path:
+            self.walk_map = PNMImage()
+            path = Filename.expand_from('$MAIN_DIR/assets/' + self.walkable_path)
+            if not self.walk_map.read(path):
+                print("Failed to read {}".format(path))
+        else:
+            self.walk_map = None
+
         # Make subparts for hobot.
         actor.make_subpart('hobot', ['hobot root', 'chain_a', 'chain_b', 'hand', 'wheel', 'neck', 'head', 'tuit', 'eyes'])
 
         # Make a copy for inspection of the animations, specifically to be able
         # to obtain the starting position of hobot in each animation.
-        self.shadow_actor = Actor(bamfile)
+        self.shadow_actor = Actor(self.model_path)
         self.shadow_hobot_root = self.shadow_actor.expose_joint(None, 'modelRoot', 'hobot root')
 
         # Make sure hobot is in a defined state in the actor
@@ -86,6 +93,7 @@ class FloorBase:#(FSM):
     def switch_to_scene_hobot(self):
         self.hobot.lock()
         self.hobot.model.hide()
+        self.hobot.lightbulb.hide()
         self.actor.release_joint('modelRoot', 'hobot root')
 
     def switch_to_free_hobot(self):
@@ -95,29 +103,69 @@ class FloorBase:#(FSM):
         bone.set_pos(-100, -100, -100)
         self.hobot.unlock()
 
-    def adjust_to_bounds(self, x, y, bounds):
-        if x < bounds[0]:
-            x = bounds[0]
-        elif x > bounds[1]:
-            x = bounds[1]
+    def adjust_move(self, pos, delta, slide=True):
+        x = (pos[0] + 16/9/2) * (9/16.0) * self.walk_map.size.x
+        y = -(pos[1] - self.walkable_y_offset) * 2 * self.walk_map.size.y
 
-        if y < bounds[2]:
-            y = bounds[2]
-        elif y > bounds[3]:
-            y = bounds[3]
+        new_pos = pos + delta
+        new_x = (new_pos[0] + 16/9/2) * (9/16.0) * self.walk_map.size.x
+        new_y = -(new_pos[1] - self.walkable_y_offset) * 2 * self.walk_map.size.y
 
-        return x, y
+        if new_x < 0 or round(new_x) >= self.walk_map.size.x:
+            return pos
+        elif new_y < 0 or round(new_y) >= self.walk_map.size.y:
+            return pos
+
+        x = int(round(x))
+        y = int(round(y))
+        new_x = int(round(new_x))
+        new_y = int(round(new_y))
+
+        if self.walk_map.get_gray(new_x, new_y) > 0.5:
+            return new_pos
+
+        if not slide:
+            return pos
+
+        if delta[0] != 0 and self.walk_map.get_gray(new_x, y) > 0.5:
+            return (new_pos[0], pos[1])
+        elif delta[1] != 0 and self.walk_map.get_gray(x, new_y) > 0.5:
+            return (pos[0], new_pos[1])
+        elif delta[0] != 0 and delta[1] == 0:
+            # Try 45 degree angle down and up
+            new_pos = self.adjust_move(pos, Vec2(delta[0] * 0.894, delta[0] * 0.447), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[0] * 0.894, delta[0] * -0.707), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[0] * 0.707, delta[0] * 0.707), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[0] * 0.707, delta[0] * -0.707), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[0] * 0.447, delta[0] * 0.894), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[0] * 0.447, delta[0] * -0.894), slide=False)
+            return new_pos
+        elif delta[0] == 0 and delta[1] != 0:
+            # Try 45 degree angle left and right
+            new_pos = self.adjust_move(pos, Vec2(delta[1] * 0.447, delta[1] * 0.894), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[1] * -0.447, delta[1] * 0.894), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[1] * 0.707, delta[1] * 0.707), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[1] * -0.707, delta[1] * 0.707), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[1] * 0.894, delta[1] * 0.447), slide=False)
+            if new_pos == pos:
+                new_pos = self.adjust_move(pos, Vec2(delta[1] * -0.894, delta[1] * 0.447), slide=False)
+            return new_pos
+        else:
+            return pos
 
     def process_input(self, input, dt):
         if self.hobot.locked:
             return
-        self.hobot.process_input(input, dt)
-
-        hobot_model = self.hobot.model
-        hobot_pos = hobot_model.get_pos()
-
-        x, y = self.adjust_to_bounds(hobot_pos.x, hobot_pos.y, self.boundaries)
-        hobot_model.set_pos(x, y, hobot_pos.z)
+        self.hobot.process_input(input, dt, self)
 
         self.check_interactions()
 

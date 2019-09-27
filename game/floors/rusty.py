@@ -8,11 +8,13 @@ VALVE_WIDTH = 0.15
 
 
 class Floor(FloorBase):
+    model_path = 'rusty_mergedhobot.bam'
+    walkable_path = 'floors/rusty/walkable.png'
 
-    boundaries = (-0.15, 0.6, -0.5, -0.26)
+    walkable_y_offset = 0.05
 
     def __init__(self, parent):
-        FloorBase.__init__(self, parent, 'rusty_mergedhobot.bam')
+        FloorBase.__init__(self, parent)
         actor = self.actor
 
         # Make subparts for all the things that can animate independently.
