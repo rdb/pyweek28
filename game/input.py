@@ -1,5 +1,6 @@
 class Input:
     button_map = {
+        'interact': ['e', 'space', 'enter'],
         'move-left': ['a', 'arrow_left'],
         'move-right': ['d', 'arrow_right'],
         'move-up': ['w', 'arrow_up'],

@@ -1,7 +1,9 @@
 from direct.actor.Actor import Actor
+from panda3d import core
 
 
-HOBOT_SCALE = 0.25
+HOBOT_SCALE = 0.18
+MOVE_Y_SPEED = 0.2
 
 
 class Hobot:
@@ -9,31 +11,95 @@ class Hobot:
     acceleration = 1.0
     deceleration = 1.0
 
-    def __init__(self, root):
+    def __init__(self, anim_root):
+        self.move_root = base.render.attach_new_node('hobot')
+        self.anim_root = anim_root
+
         self.model = Actor('hobot.bam')
-        self.model.reparent_to(root)
+        root_bone = self.model.expose_joint(None, 'modelRoot', 'hobot root')
+
+        self.model.reparent_to(self.anim_root)
         self.model.set_two_sided(True)
-        self.model.set_scale(HOBOT_SCALE)
-        self.model.set_y(-0.45)
-        self.model.set_z(50)
+        self.model.set_transform(root_bone.get_transform().get_inverse())
+        self.model.flatten_strong()
+        self.model.set_z(0.1)
         self.facing = 1.0
 
         self.move_control = self.model.get_anim_control('move_forward')
 
         self.speed = 0.0
+        self.locked = True
+
+        self.model.wrt_reparent_to(self.move_root)
+        self.model.hide()
+
+        head = self.model.expose_joint(None, 'modelRoot', 'head')
+
+        light_texture = loader.load_texture('hobot/light_on.png')
+        light_texture.set_wrap_u(core.SamplerState.WM_clamp)
+        light_texture.set_wrap_v(core.SamplerState.WM_clamp)
+        cm = core.CardMaker('card')
+        cm.set_frame(-0.15, 0.15, 0.35, 0.65)
+        self.lightbulb = head.attach_new_node(cm.generate())
+        self.lightbulb.set_texture(light_texture)
+        self.lightbulb.set_attrib(core.ColorBlendAttrib.make(core.ColorBlendAttrib.M_add, core.ColorBlendAttrib.O_incoming_alpha, core.ColorBlendAttrib.O_one))
+        self.lightbulb.set_depth_test(False)
+        self.lightbulb.set_bin('fixed', 0)
+        self.lightbulb.set_p(-90)
+        self.lightbulb.set_billboard_point_eye()
+        self.lightbulb.set_two_sided(True)
+        self.lightbulb.hide()
+
+        self.action_callback = None
+
+    def set_action(self, callback):
+        self.action_callback = callback
+        self.lightbulb.show()
+
+    def clear_action(self):
+        self.action_callback = None
+        self.lightbulb.hide()
+
+    def do_action(self):
+        if self.action_callback:
+            self.action_callback()
+
+    def lock(self):
+        #self.model.wrt_reparent_to(self.anim_root)
+        self.locked = True
+        self.speed = 0.0
+
+    def unlock(self):
+        self.model.set_pos(self.anim_root.get_pos())
+        self.locked = False
+        self.model.set_hpr(0, 0, -90)
+        self.model.show()
+
+    def face(self, dir):
+        if dir:
+            self.facing = 1 if dir > 0 else -1
+            self.model.set_sz(self.facing * -HOBOT_SCALE)
 
     def process_input(self, input, dt):
+        if self.locked:
+            return
+
+        if input.get_action('interact'):
+            self.do_action()
+
         move_x = input.get_axis('move-horizontal')
         move_y = input.get_axis('move-vertical')
 
         if move_x:
             self.speed += move_x * self.acceleration * dt
-            self.facing = 1 if move_x > 0 else -1
-            self.model.set_sx(self.facing * -HOBOT_SCALE)
+            self.face(move_x)
         elif self.speed > 0:
             self.speed = max(0, self.speed - self.deceleration * dt)
         elif self.speed < 0:
             self.speed = min(0, self.speed + self.deceleration * dt)
+
+        if move_y:
+            self.model.set_y(self.model.get_y() + move_y * dt * MOVE_Y_SPEED)
 
         if self.speed != 0:
             if self.speed > self.max_speed:
