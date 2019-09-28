@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+import sys
+
+if sys.version_info < (3, 0):
+    print("Sorry, but the game does not work with Python 2.  Please upgrade to")
+    print("Python 3.  Thank you!")
+    sys.exit(1)
+
 try:
     import panda3d.core
 except ImportError:
