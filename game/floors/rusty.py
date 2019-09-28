@@ -185,7 +185,7 @@ class Floor(FloorBase):
         else:
             self.hobot.model.set_z(15)
 
-        if hobot_pos.y > -0.30:
+        if hobot_pos.y > -0.31:
             closest_valve = None
             closest_valve_dist = 1000
 
