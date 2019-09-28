@@ -179,6 +179,12 @@ class Floor(FloorBase):
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
+
+        if hobot_pos.y > -0.35:
+            self.hobot.model.set_z(12.8201)
+        else:
+            self.hobot.model.set_z(15)
+
         if hobot_pos.y > -0.30:
             closest_valve = None
             closest_valve_dist = 1000

@@ -25,6 +25,8 @@ class Floor(FloorBase):
 
     walkable_y_offset = 0.025
 
+    free_hobot_z = 20
+
     def __init__(self, parent):
         FloorBase.__init__(self, parent)
         actor = self.actor
@@ -138,6 +140,13 @@ class Floor(FloorBase):
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
+
+        if hobot_pos.y > -0.25:
+            self.hobot.model.set_z(8)
+        elif hobot_pos.x > 0 and hobot_pos.y > -0.31:
+            self.hobot.model.set_z(8)
+        else:
+            self.hobot.model.set_z(20)
 
         if self.hook_position == 'wall' and hobot_pos.y > -0.33 and hobot_pos.x > 0 and hobot_pos.x < 0.1:
             self.hobot.set_action(self.pickup_hook)

@@ -13,6 +13,7 @@ class FloorBase:#(FSM):
     sound_names = []
 
     walkable_y_offset = 0.0
+    free_hobot_z = None
 
     def __init__(self, parent):
         actor = Actor(self.model_path)
@@ -177,6 +178,10 @@ class FloorBase:#(FSM):
         bone = self.actor.control_joint(None, 'modelRoot', 'hobot root')
         bone.set_pos(-100, -100, -100)
         self.hobot.unlock()
+
+        if self.free_hobot_z is not None:
+            self.hobot.model.set_z(self.free_hobot_z)
+
         if self.carrying_joint_name and not self.carrying_joint:
             self.grab_joint(self.carrying_joint_name)
 
