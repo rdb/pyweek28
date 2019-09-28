@@ -15,7 +15,7 @@ class Floor(FloorBase):
 
     def start(self):
         self.play('entrance', ['credits'])
-        self.play('spin', ['cube'], callback=self.spin)
+        self.play('cube', ['cube'], callback=self.spin)
 
     def spin(self):
-        self.play('spin', ['cube'], callback=self.spin)
+        self.play('cube', ['cube'], callback=self.spin)
