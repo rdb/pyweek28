@@ -43,10 +43,10 @@ class Floor(FloorBase):
             ActorInterval(self.actor, 'cube idle', partName='cube'),
             ActorInterval(self.actor, 'cube idle', partName='cube'),
             ActorInterval(self.actor, 'cube idle', partName='cube'),
-            ActorInterval(self.actor, 'cube idle', partName='cube'),
             Func(self.sfx['cubesong'].play),
             ActorInterval(self.actor, 'cube singing', partName='cube'),
             ActorInterval(self.actor, 'cube singing', partName='cube'),
+            ActorInterval(self.actor, 'cube idle', partName='cube'),
         )
 
     def start(self):
