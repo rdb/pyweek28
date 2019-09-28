@@ -38,4 +38,4 @@ class Floor(FloorBase):
         base.ignore('enter')
         base.ignore('space')
         self.play('fontflop', ['logo'], sound=self.sfx['fontflop'])
-        self.play('entrance', ['hobot', 'keypress'], from_frame=80, callback=self.on_stumble, sound=self.sfx['hobo_intro2'])
+        self.play('entrance', ['hobot', 'keypress'], from_frame=80, callback=base.next_floor, sound=self.sfx['hobo_intro2'])
