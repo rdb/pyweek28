@@ -32,6 +32,7 @@ class FloorBase:#(FSM):
         if self.music_path:
             self.music = base.loader.load_music(self.music_path)
             self.music.set_loop(True)
+            self.music.set_volume(0.3)
             self.music.play()
         else:
             self.music = None
