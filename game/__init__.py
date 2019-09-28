@@ -1,4 +1,5 @@
 from direct.showbase.ShowBase import ShowBase
+from direct.interval.IntervalGlobal import Wait, Func, Sequence
 from panda3d import core
 
 import importlib
@@ -8,6 +9,8 @@ from .input import Input
 
 
 ASPECT_RATIO = 16 / 9.0
+
+FLOORS = ['rusty', 'nature']
 
 
 class Game(ShowBase):
@@ -50,17 +53,41 @@ class Game(ShowBase):
         self.input_clock.set_mode(core.ClockObject.M_limited)
         self.input_clock.set_frame_rate(60.0)
 
+        self.floor = None
+        self.floor_index = -1
+
     def input_task(self, task):
         dt = self.input_clock.dt
-        self.floor.process_input(self.input, dt)
+        if self.floor is not None:
+            self.floor.process_input(self.input, dt)
         return task.cont
 
+    def next_floor(self):
+        if self.floor is not None:
+            print("Transitioning to next floor")
+            old_floor = self.floor
+            self.floor = None
+            base.transitions.irisOut(1.0)
+            Sequence(Wait(1.5), Func(old_floor.destroy), Func(self.next_floor)).start()
+        else:
+            self.floor_index += 1
+            self.load_floor(FLOORS[self.floor_index])
+
     def load_floor(self, name):
+        print("Loading floor {}".format(name))
         module = importlib.import_module('.floors.' + name, 'game')
         self.floor = module.Floor(self.render)
+        try:
+            self.floor_index = FLOORS.index(name)
+        except ValueError:
+            self.floor_index = 0
+        base.transitions.irisIn(1.0, finishIval=Sequence(Wait(1.0), Func(self.floor.start)))
 
 
-def main(floor='rusty'):
+def main(floor=None):
     game = Game()
-    game.load_floor(floor)
+    if floor:
+        game.load_floor(floor)
+    else:
+        game.next_floor()
     game.run()

@@ -10,6 +10,7 @@ VALVE_WIDTH = 0.15
 class Floor(FloorBase):
     model_path = 'floors/rusty/scene.bam'
     walkable_path = 'floors/rusty/walkable.png'
+    music_path = 'floors/rusty/music.ogg'
 
     walkable_y_offset = 0.05
 
@@ -35,10 +36,12 @@ class Floor(FloorBase):
         self.indicator = self.actor.control_joint(None, 'modelRoot', 'indicator')
         self.indicator_interval = None
 
-        self.play('entrance', ['hobot'])
         self.rattle('side pipe')
 
         self.airflow = False
+
+    def start(self):
+        self.play('entrance', ['hobot'])
 
     def toggle_valve(self, valve):
         if self.hobot.locked:
@@ -147,7 +150,7 @@ class Floor(FloorBase):
             control.loop(True)
 
     def finish(self):
-        self.play('fly_up', ['hobot'])
+        self.play('fly_up', ['hobot'], callback=base.next_floor)
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()

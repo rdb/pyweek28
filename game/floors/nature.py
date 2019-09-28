@@ -9,6 +9,7 @@ TREE_WATER_COUNT = 2
 class Floor(FloorBase):
     model_path = 'floors/nature/scene.bam'
     walkable_path = 'floors/nature/walkable.png'
+    music_path = 'floors/nature/music.ogg'
 
     walkable_y_offset = 0.025
 
@@ -25,7 +26,6 @@ class Floor(FloorBase):
         actor.make_subpart('sky', ['sky'])
 
         self.actor.pose('sky_scroll', 1, partName='sky')
-        self.play('entrance', ['hobot', 'entrance'])
 
         actor.pose('tree_grow', 30, partName='tree')
         self.tree_frame = 30
@@ -35,6 +35,9 @@ class Floor(FloorBase):
         self.bucket_knocked = False
         self.bucket_filled = False
         self.water_count = 0
+
+    def start(self):
+        self.play('entrance', ['hobot', 'entrance'])
 
     def pickup_hook(self):
         if self.hook_position == 'wall':

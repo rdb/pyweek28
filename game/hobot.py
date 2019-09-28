@@ -50,6 +50,10 @@ class Hobot:
 
         self.action_callback = None
 
+    def destroy(self):
+        # RIP hobot :-(
+        self.model.cleanup()
+
     def set_action(self, callback):
         self.action_callback = callback
         self.lightbulb.show()

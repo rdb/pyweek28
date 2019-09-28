@@ -8,6 +8,9 @@ from .hobot import Hobot
 
 class FloorBase:#(FSM):
 
+    walkable_path = None
+    music_path = None
+
     def __init__(self, parent):
         actor = Actor(self.model_path)
         actor.set_two_sided(True)
@@ -23,6 +26,13 @@ class FloorBase:#(FSM):
                 print("Failed to read {}".format(path))
         else:
             self.walk_map = None
+
+        if self.music_path:
+            self.music = base.loader.load_music(self.music_path)
+            self.music.set_loop(True)
+            self.music.play()
+        else:
+            self.music = None
 
         # Make subparts for hobot.
         actor.make_subpart('hobot', ['hobot root', 'chain_a', 'chain_b', 'hand', 'wheel', 'neck', 'head', 'tuit', 'eyes'])
@@ -41,6 +51,15 @@ class FloorBase:#(FSM):
 
         self.carrying_joint = None
         self.carrying_joint_name = None
+
+    def destroy(self):
+        self.actor.cleanup()
+        self.hobot.destroy()
+        if self.music:
+            self.music.stop()
+
+    def start(self):
+        pass
 
     def grab_joint(self, name):
         print("Grabbing {}".format(name))
