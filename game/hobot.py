@@ -62,6 +62,8 @@ class Hobot:
         self.shadow.set_billboard_point_eye()
         self.shadow.set_two_sided(True)
         self.shadow.set_bin('transparent', 0)
+        self.shadow.set_alpha_scale(0)
+        self.shadow_fade = None
 
         self.ding_sfx = loader.load_sfx('hobot/sfx/ding.wav')
         self.ding_sfx.set_volume(0.5)

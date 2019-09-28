@@ -72,6 +72,8 @@ class FloorBase:#(FSM):
         self.shadow.set_billboard_point_eye()
         self.shadow.set_two_sided(True)
         self.shadow.set_bin('transparent', 0)
+        self.shadow.set_alpha_scale(0)
+        self.shadow_fade = None
 
         self.carrying_joint = None
         self.carrying_joint_name = None
@@ -190,6 +192,12 @@ class FloorBase:#(FSM):
             self.actor.release_joint('modelRoot', self.carrying_joint_name)
             self.carrying_joint = None
 
+        if self.shadow_fade is not None:
+            self.shadow_fade.pause()
+        self.shadow.set_alpha_scale(self.hobot.shadow.get_color_scale()[3])
+        self.shadow_fade = self.shadow.colorScaleInterval(5.0, (1, 1, 1, 0), blendType='easeInOut')
+        self.shadow_fade.start()
+
     def switch_to_free_hobot(self):
         if self.hobot.model.is_empty():
             return
@@ -198,6 +206,12 @@ class FloorBase:#(FSM):
         bone = self.actor.control_joint(None, 'modelRoot', 'hobot root')
         bone.set_pos(-100, -100, -100)
         self.hobot.unlock()
+
+        if self.hobot.shadow_fade is not None:
+            self.hobot.shadow_fade.pause()
+        self.hobot.shadow.set_alpha_scale(self.shadow.get_color_scale()[3])
+        self.hobot.shadow_fade = self.hobot.shadow.colorScaleInterval(5.0, (1, 1, 1, 1), blendType='easeInOut')
+        self.hobot.shadow_fade.start()
 
         if self.free_hobot_z is not None:
             self.hobot.model.set_z(self.free_hobot_z)
