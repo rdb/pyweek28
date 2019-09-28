@@ -122,15 +122,22 @@ class Floor(FloorBase):
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
 
-        if hobot_pos.x > 0.75:
-            self.hobot.clear_action()
-        elif not self.solved and hobot_pos.x > 0.56:
-            self.hobot.set_action(lambda: self.pull_rope(2))
-        elif not self.solved and hobot_pos.x > 0.37:
-            self.hobot.set_action(lambda: self.pull_rope(1))
-        elif not self.solved and hobot_pos.x > 0.18:
-            self.hobot.set_action(lambda: self.pull_rope(0))
-        elif self.solved and hobot_pos.x < -0.25:
+        rope_positions = [0.27, 0.46, 0.65]
+        if not self.solved:
+            closest_rope = None
+            closest_rope_dist = 1000
+
+            for i, rope_x in enumerate(rope_positions):
+                rope_dist = abs(hobot_pos.x - rope_x)
+                if rope_dist < closest_rope_dist:
+                    closest_rope_dist = rope_dist
+                    closest_rope = i
+
+            if closest_rope_dist < 0.09:
+                self.hobot.set_action(lambda: self.pull_rope(closest_rope))
+            else:
+                self.hobot.clear_action()
+        elif self.solved and hobot_pos.x < -0.20:
             self.hobot.set_action(self.ride_up)
         else:
             self.hobot.clear_action()
