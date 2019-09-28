@@ -74,7 +74,11 @@ class Floor(FloorBase):
         self.switch_to_free_hobot()
 
     def enter_cube(self):
-        self.play('exit', ['cube', 'hobot'], callback=base.end_game, sound=self.sfx['exit'])
+        self.play('exit', ['cube', 'hobot'], extra_interval=Sequence(Wait(3.0), Func(self.hide_hobot)), callback=base.end_game, sound=self.sfx['exit'])
+
+    def hide_hobot(self):
+        print("Hiding hobot")
+        self.actor.control_joint(None, 'modelRoot', 'hobot root').set_z(-10000)
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
