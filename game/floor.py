@@ -25,9 +25,7 @@ class FloorBase:#(FSM):
 
         if self.walkable_path:
             self.walk_map = PNMImage()
-            path = Filename.expand_from('$MAIN_DIR/assets/' + self.walkable_path)
-            if not self.walk_map.read(path):
-                print("Failed to read {}".format(path))
+            self.load_walk_map(self.walkable_path)
         else:
             self.walk_map = None
 
@@ -70,6 +68,11 @@ class FloorBase:#(FSM):
 
     def start(self):
         pass
+
+    def load_walk_map(self, path):
+        path = Filename.expand_from('$MAIN_DIR/assets/' + path)
+        if not self.walk_map.read(path):
+            print("Failed to read {}".format(path))
 
     def grab_joint(self, name):
         print("Grabbing {}".format(name))
@@ -145,11 +148,19 @@ class FloorBase:#(FSM):
         else:
             if sound:
                 sound.play()
-            if not parts:
-                self.actor.play(anim)
+
+            if callback:
+                anims = []
+                for part in parts or (None,):
+                    anims.append(ActorInterval(self.actor, anim, startFrame=from_frame, endFrame=to_frame, partName=part))
+
+                Sequence(Parallel(*anims), Func(callback)).start()
             else:
-                for part in parts:
-                    self.actor.play(anim, fromFrame=from_frame, toFrame=to_frame, partName=part)
+                if not parts:
+                    self.actor.play(anim)
+                else:
+                    for part in parts:
+                        self.actor.play(anim, fromFrame=from_frame, toFrame=to_frame, partName=part)
 
     def switch_to_scene_hobot(self):
         self.hobot.lock()
