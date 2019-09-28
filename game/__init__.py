@@ -90,7 +90,8 @@ class Game(ShowBase):
         old_floor = self.floor
         self.floor = None
         self.transitions.setFadeColor(1, 1, 1)
-        self.transitions.fadeOut(4.0, blendType='easeIn')
+        self.transitions.fadeOut(3.0, blendType='easeIn')
+        Sequence(Wait(3.5), Func(old_floor.destroy), Func(self.next_floor)).start()
 
 
 def main(floor=None):
