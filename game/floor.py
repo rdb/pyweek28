@@ -10,6 +10,7 @@ class FloorBase:#(FSM):
 
     walkable_path = None
     music_path = None
+    sound_names = []
 
     def __init__(self, parent):
         actor = Actor(self.model_path)
@@ -34,6 +35,10 @@ class FloorBase:#(FSM):
             self.music.play()
         else:
             self.music = None
+
+        self.sfx = {}
+        for s in self.sound_names:
+            self.sfx[s] = base.loader.load_sfx(Filename(self.sound_path, s + ".wav"))
 
         # Make subparts for hobot.
         actor.make_subpart('hobot', ['hobot root', 'chain_a', 'chain_b', 'hand', 'wheel', 'neck', 'head', 'tuit', 'eyes'])

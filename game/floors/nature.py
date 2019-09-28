@@ -43,10 +43,6 @@ class Floor(FloorBase):
         actor.pose('tree_grow', 30, partName='tree')
         self.tree_frame = 30
 
-        self.sfx = {}
-        for s in self.sound_names:
-            self.sfx[s] = base.loader.loadSfx(self.sound_path + s + ".wav")
-
         self.hook_position = 'wall'
         self.bucket_position = 'plank'
         self.bucket_knocked = False

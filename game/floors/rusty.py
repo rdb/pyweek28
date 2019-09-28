@@ -50,11 +50,6 @@ class Floor(FloorBase):
 
         self.airflow = False
 
-        self.sfx = {}
-        for s in self.sound_names:
-            self.sfx[s] = base.loader.loadSfx(self.sound_path + s + ".wav")
-
-
     def start(self):
         self.play('entrance', ['hobot'])
 
