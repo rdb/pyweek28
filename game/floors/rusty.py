@@ -13,6 +13,7 @@ class Floor(FloorBase):
     music_path = 'floors/rusty/music.ogg'
     sound_path = 'floors/rusty/sfx/'
     sound_names = [
+        "entrance",
         "air_state",
         "big_pipe_rattling",
         "dial_pipes_rattling",
@@ -51,7 +52,7 @@ class Floor(FloorBase):
         self.airflow = False
 
     def start(self):
-        self.play('entrance', ['hobot'])
+        self.play('entrance', ['hobot'], sound=self.sfx["entrance"])
 
     def toggle_valve(self, valve):
         if self.hobot.locked:
