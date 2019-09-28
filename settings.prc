@@ -14,7 +14,7 @@ model-path $MAIN_DIR/assets
 view-frustum-cull false
 
 # Smoother animations
-interpolate-frames true
+interpolate-frames false
 
 
 show-frame-rate-meter true
