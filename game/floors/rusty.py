@@ -8,7 +8,7 @@ VALVE_WIDTH = 0.15
 
 
 class Floor(FloorBase):
-    model_path = 'rusty_mergedhobot.bam'
+    model_path = 'floors/rusty/scene.bam'
     walkable_path = 'floors/rusty/walkable.png'
 
     walkable_y_offset = 0.05
@@ -58,7 +58,6 @@ class Floor(FloorBase):
 
     def on_valve_changed(self):
         if self.valve_states[0]:
-            print(self.valve_states)
             self.rattle('big pipe')
 
             # How much is flowing to the tank?

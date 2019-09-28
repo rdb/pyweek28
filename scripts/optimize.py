@@ -273,6 +273,17 @@ def optimize_bam(path):
             if optimize_geom(gnode, i):
                 any_changed = True
 
+    for tex in model.find_all_textures():
+        if tex.name and not tex.filename:
+            rel_path = 'layers/' + tex.name + '.png'
+            dir = core.Filename(path.get_dirname())
+            fn = core.Filename(dir, rel_path)
+            if tex.write(fn):
+                print(f"{tex.name}: wrote to {fn}")
+                tex.filename = 'assets/' + dir.get_basename() + '/' + rel_path
+                tex.fullpath = fn
+            any_changed = True
+
     if any_changed:
         model.write_bam_file(path)
 

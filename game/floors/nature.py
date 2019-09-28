@@ -7,7 +7,7 @@ TREE_WATER_COUNT = 2
 
 
 class Floor(FloorBase):
-    model_path = 'nature_mergedhobot.bam'
+    model_path = 'floors/nature/scene.bam'
     walkable_path = 'floors/nature/walkable.png'
 
     walkable_y_offset = 0.025
