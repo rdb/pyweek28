@@ -82,7 +82,7 @@ class Floor(FloorBase):
 
     def jump_tree(self):
         if self.hook_position == 'hobot':
-            self.play('exit', ['hobot', 'tree', 'hook'], sound=self.sfx["exit"])
+            self.play('exit', ['hobot', 'tree', 'hook'], sound=self.sfx["exit"], callback=base.next_floor)
 
     def pump(self):
         if self.bucket_position == 'hobot':

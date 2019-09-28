@@ -10,7 +10,7 @@ from .input import Input
 
 ASPECT_RATIO = 16 / 9.0
 
-FLOORS = ['rusty', 'nature']
+FLOORS = ['rusty', 'nature', 'bells']
 
 
 class Game(ShowBase):
