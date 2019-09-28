@@ -1,6 +1,7 @@
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, ActorInterval
 #from direct.fsm.FSM import FSM
+from panda3d import core
 from panda3d.core import PNMImage, Filename, Vec2, TransformState
 
 from .hobot import Hobot
@@ -56,6 +57,21 @@ class FloorBase:#(FSM):
         self.hobot_root = actor.expose_joint(None, 'modelRoot', 'hobot root')
         self.hobot_hand = actor.expose_joint(None, 'modelRoot', 'hand')
         self.hobot = Hobot(self.hobot_root)
+
+        shadow_texture = loader.load_texture('hobot/drop_shadow.png')
+        shadow_texture.set_wrap_u(core.SamplerState.WM_clamp)
+        shadow_texture.set_wrap_v(core.SamplerState.WM_clamp)
+        cm = core.CardMaker('card')
+        cm.set_frame(-0.35, 0.35, -0.45, -0.1)
+        self.shadow = self.hobot_root.attach_new_node(cm.generate())
+        self.shadow.set_texture(shadow_texture)
+        self.shadow.set_attrib(core.ColorBlendAttrib.make(core.ColorBlendAttrib.M_add, core.ColorBlendAttrib.O_zero, core.ColorBlendAttrib.O_one_minus_incoming_alpha))
+        self.shadow.set_p(-90)
+        self.shadow.set_depth_write(False)
+        self.shadow.set_x(0.2)
+        self.shadow.set_billboard_point_eye()
+        self.shadow.set_two_sided(True)
+        self.shadow.set_bin('transparent', 0)
 
         self.carrying_joint = None
         self.carrying_joint_name = None
