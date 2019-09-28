@@ -6,9 +6,9 @@ MOVE_Y_SPEED = 0.2
 
 
 class Hobot:
-    max_speed = 0.5
-    acceleration = 1.0
-    deceleration = 1.0
+    max_speed = 0.25
+    acceleration = 0.5
+    deceleration = 0.5
 
     def __init__(self, anim_root):
         self.move_root = base.render.attach_new_node('hobot')
