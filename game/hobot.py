@@ -80,7 +80,7 @@ class Hobot:
         self.model.cleanup()
 
     def set_action(self, callback):
-        if not self.action_callback:
+        if self.action_callback != callback:
             self.ding_sfx.play()
             self.action_callback = callback
         self.lightbulb.show()
