@@ -173,6 +173,8 @@ class FloorBase:#(FSM):
             self.carrying_joint = None
 
     def switch_to_free_hobot(self):
+        if self.hobot.model.is_empty():
+            return
         self.hobot.face(self.hobot_root.get_sz() * -1)
         self.hobot.model.show()
         bone = self.actor.control_joint(None, 'modelRoot', 'hobot root')
