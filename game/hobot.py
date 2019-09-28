@@ -37,7 +37,7 @@ class Hobot:
         light_texture.set_wrap_u(core.SamplerState.WM_clamp)
         light_texture.set_wrap_v(core.SamplerState.WM_clamp)
         cm = core.CardMaker('card')
-        cm.set_frame(-0.15, 0.15, 0.35, 0.65)
+        cm.set_frame(-0.15, 0.15, 0.15, 0.45)
         self.lightbulb = head.attach_new_node(cm.generate())
         self.lightbulb.set_texture(light_texture)
         self.lightbulb.set_attrib(core.ColorBlendAttrib.make(core.ColorBlendAttrib.M_add, core.ColorBlendAttrib.O_incoming_alpha, core.ColorBlendAttrib.O_one))
