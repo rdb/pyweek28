@@ -12,6 +12,8 @@ class FloorBase:#(FSM):
     music_path = None
     sound_names = []
 
+    walkable_y_offset = 0.0
+
     def __init__(self, parent):
         actor = Actor(self.model_path)
         actor.set_two_sided(True)
