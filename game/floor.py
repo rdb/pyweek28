@@ -18,6 +18,7 @@ class FloorBase:#(FSM):
         print(actor.get_anim_names())
         actor.list_joints()
         self.actor = actor
+        self.actor.hide()
 
         if self.walkable_path:
             self.walk_map = PNMImage()
@@ -57,6 +58,7 @@ class FloorBase:#(FSM):
         self.hobot.destroy()
         if self.music:
             self.music.stop()
+        self.actor.remove_node()
 
     def start(self):
         pass

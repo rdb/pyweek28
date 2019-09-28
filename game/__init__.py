@@ -84,7 +84,7 @@ class Game(ShowBase):
             self.floor_index = FLOORS.index(name)
         except ValueError:
             self.floor_index = 0
-        Sequence(Wait(1.0), Func(self.transitions.irisIn, 2.0), Wait(1.0), Func(self.floor.start)).start()
+        Sequence(Wait(1.0), Func(self.floor.actor.show), Func(self.transitions.irisIn, 2.0), Wait(1.0), Func(self.floor.start)).start()
 
 
 def main(floor=None):
