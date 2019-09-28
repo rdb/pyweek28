@@ -1,4 +1,5 @@
 from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, ActorInterval
+import sys
 
 from ..floor import FloorBase
 
@@ -15,7 +16,5 @@ class Floor(FloorBase):
 
     def start(self):
         self.play('entrance', ['credits'])
-        self.play('cube', ['cube'], callback=self.spin)
-
-    def spin(self):
-        self.play('cube', ['cube'], callback=self.spin)
+        self.play('cube', ['cube'], loop=True)
+        base.accept('escape', sys.exit)
