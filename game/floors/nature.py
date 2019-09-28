@@ -17,8 +17,9 @@ class Floor(FloorBase):
         FloorBase.__init__(self, parent)
         actor = self.actor
 
-        actor.make_subpart('pump', ['pump plunger', 'pump handle', 'drip'], overlapping=True)
-        actor.make_subpart('bucket', ['bucket', 'drip'], overlapping=True)
+        actor.make_subpart('pump', ['pump plunger', 'pump handle'])
+        actor.make_subpart('drip', ['drip'])
+        actor.make_subpart('bucket', ['bucket'])
         actor.make_subpart('plank', ['plank'])
         actor.make_subpart('hook', ['hook'])
         actor.make_subpart('tree', ['sapling', 'tree main', 'tree bottom bra', 'tree top', 'tree top branch', 'tree mid', 'tree shadow'])
@@ -69,10 +70,10 @@ class Floor(FloorBase):
 
     def pump(self):
         if self.bucket_position == 'hobot':
-            self.play('fill_bucket', ['hobot', 'pump', 'bucket'])
+            self.play('fill_bucket', ['hobot', 'pump', 'bucket', 'drip'])
             self.bucket_filled = True
         else:
-            self.play('pump', ['hobot', 'pump'])
+            self.play('pump', ['hobot', 'pump', 'drip'])
 
     def water_rock(self):
         if self.water_count >= TREE_WATER_COUNT:
@@ -81,9 +82,9 @@ class Floor(FloorBase):
         self.water_count += 1
         extra_interval = Sequence(Wait(1.0), Func(self.grow_tree))
         if self.water_count >= TREE_WATER_COUNT:
-            self.play('water_rock_last', ['hobot', 'bucket'], extra_interval=extra_interval, callback=self.on_drop_bucket)
+            self.play('water_rock_last', ['hobot', 'bucket', 'drip'], extra_interval=extra_interval, callback=self.on_drop_bucket)
         else:
-            self.play('water_rock_repeat', ['hobot', 'bucket'], extra_interval=extra_interval)
+            self.play('water_rock_repeat', ['hobot', 'bucket', 'drip'], extra_interval=extra_interval)
         self.bucket_filled = False
 
     def on_drop_bucket(self):
