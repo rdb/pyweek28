@@ -1,4 +1,5 @@
 from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, ActorInterval
+#from direct.gui.OnscreenImage import OnscreenImage
 
 from ..floor import FloorBase
 
@@ -16,11 +17,18 @@ class Floor(FloorBase):
     def __init__(self, parent):
         FloorBase.__init__(self, parent)
         actor = self.actor
+        actor.make_subpart("keypress", ["keypress"])
         actor.make_subpart("logo", ["H", "O", "b", "o", "t", "s", "hand2"])
 
     def start(self):
         self.play('fontflop', ['logo'], sound=self.sfx['fontflop'])
-        self.play('entrance', ['hobot'], to_frame=80, sound=self.sfx['hobo_intro1'], callback=self.on_stumble)
+        self.play('entrance', ['hobot', 'keypress'], to_frame=80, sound=self.sfx['hobo_intro1'], callback=self.on_stumble)
+
+        #img = OnscreenImage(loader.load_texture('floors/title/layers/a09-keypress.png'))
+        #img.reparent_to(self.actor)
+        #img.set_pos(0, 0, 1)
+        #img.set_p(-90)
+        #img.set_scale(0.451, 1, 0.041)
 
     def on_stumble(self):
         base.accept('enter', self.on_start)
@@ -30,4 +38,4 @@ class Floor(FloorBase):
         base.ignore('enter')
         base.ignore('space')
         self.play('fontflop', ['logo'], sound=self.sfx['fontflop'])
-        self.play('entrance', ['hobot'], from_frame=80, callback=self.on_stumble, sound=self.sfx['hobo_intro2'])
+        self.play('entrance', ['hobot', 'keypress'], from_frame=80, callback=self.on_stumble, sound=self.sfx['hobo_intro2'])
