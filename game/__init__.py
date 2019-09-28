@@ -56,7 +56,7 @@ class Game(ShowBase):
         self.floor = None
         self.floor_index = -1
         self.transitions.IrisModelName = 'ui/iris.egg'
-        self.transitions.irisOut(0)
+        self.transitions.fadeOut(0)
 
     def input_task(self, task):
         dt = self.input_clock.dt
@@ -69,7 +69,7 @@ class Game(ShowBase):
             print("Transitioning to next floor")
             old_floor = self.floor
             self.floor = None
-            self.transitions.irisOut(2.0)
+            self.transitions.fadeOut(2.0)
             Sequence(Wait(2.5), Func(old_floor.destroy), Func(self.next_floor)).start()
         else:
             self.floor_index += 1
@@ -78,13 +78,13 @@ class Game(ShowBase):
     def load_floor(self, name):
         print("Loading floor {}".format(name))
         module = importlib.import_module('.floors.' + name, 'game')
-        self.transitions.irisOut(0)
+        self.transitions.fadeOut(0)
         self.floor = module.Floor(self.render)
         try:
             self.floor_index = FLOORS.index(name)
         except ValueError:
             self.floor_index = 0
-        Sequence(Wait(1.0), Func(self.floor.actor.show), Func(self.transitions.irisIn, 2.0), Wait(1.0), Func(self.floor.start)).start()
+        Sequence(Wait(1.0), Func(self.floor.actor.show), Func(self.transitions.fadeIn, 2.0), Wait(1.0), Func(self.floor.start)).start()
 
     def end_game(self):
         old_floor = self.floor
