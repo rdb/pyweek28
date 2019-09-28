@@ -11,6 +11,16 @@ class Floor(FloorBase):
     model_path = 'floors/rusty/scene.bam'
     walkable_path = 'floors/rusty/walkable.png'
     music_path = 'floors/rusty/music.ogg'
+    sound_path = 'floors/rusty/sfx/'
+    sound_names = [
+        "air_state",
+        "big_pipe_rattling",
+        "dial_pipes_rattling",
+        "fly_up",
+        "valve_0_turn_off",
+        "valve_0_turn_on",
+        "valve_x_turn_onoff",
+    ]
 
     walkable_y_offset = 0.05
 
@@ -40,6 +50,11 @@ class Floor(FloorBase):
 
         self.airflow = False
 
+        self.sfx = {}
+        for s in self.sound_names:
+            self.sfx[s] = base.loader.loadSfx(self.sound_path + s + ".wav")
+
+
     def start(self):
         self.play('entrance', ['hobot'])
 
@@ -48,14 +63,19 @@ class Floor(FloorBase):
             return
         state = not self.valve_states[valve]
 
-        wait_time = 1.5 if valve == 0 else 1.0
+        if valve == 0:
+            sound_on = self.sfx["valve_0_turn_on"]
+            sound_off = self.sfx["valve_0_turn_off"]
+        else:
+            sound_on = sound_off = self.sfx["valve_x_turn_onoff"]
 
+        wait_time = 1.5 if valve == 0 else 1.0
         # After a second of playing the animation, call on_valve_changed
         extra_interval = Sequence(Wait(wait_time), Func(self.on_valve_changed))
         if state:
-            self.play('valve_{}_turn_on'.format(valve), ['hobot', 'valve' + str(valve)], extra_interval=extra_interval)
+            self.play('valve_{}_turn_on'.format(valve), ['hobot', 'valve' + str(valve)], extra_interval=extra_interval, sound=sound_on)
         else:
-            self.play('valve_{}_turn_off'.format(valve), ['hobot', 'valve' + str(valve)], extra_interval=extra_interval)
+            self.play('valve_{}_turn_off'.format(valve), ['hobot', 'valve' + str(valve)], extra_interval=extra_interval, sound=sound_off)
 
         self.valve_states[valve] = state
 
@@ -86,6 +106,8 @@ class Floor(FloorBase):
             # Stop rattling everything.
             for part in ['big pipe', 'dial pipes', 'front tank', 'giant pipe left', 'rear tank']:
                 self.stop_rattle(part)
+            self.sfx["big_pipe_rattling"].stop()
+            self.sfx["dial_pipes_rattling"].stop()
 
             self.set_dial(0.0)
             self.set_airflow(False)
@@ -98,6 +120,13 @@ class Floor(FloorBase):
 
     def rattle(self, part):
         "Rattles the given rattleable part."
+
+        if part == "big pipe":
+            self.sfx["big_pipe_rattling"].setLoop(True)
+            self.sfx["big_pipe_rattling"].play()
+        elif part == "dial pipes":
+            self.sfx["dial_pipes_rattling"].setLoop(True)
+            self.sfx["dial_pipes_rattling"].play()
 
         anim_name = part.replace(' ', '_') + '_rattling'
 
@@ -150,7 +179,7 @@ class Floor(FloorBase):
             control.loop(True)
 
     def finish(self):
-        self.play('fly_up', ['hobot'], callback=base.next_floor)
+        self.play('fly_up', ['hobot'], callback=base.next_floor, sound=self.sfx["fly_up"])
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
