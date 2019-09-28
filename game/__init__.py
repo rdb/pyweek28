@@ -86,6 +86,12 @@ class Game(ShowBase):
             self.floor_index = 0
         Sequence(Wait(1.0), Func(self.floor.actor.show), Func(self.transitions.irisIn, 2.0), Wait(1.0), Func(self.floor.start)).start()
 
+    def end_game(self):
+        old_floor = self.floor
+        self.floor = None
+        self.transitions.setFadeColor(1, 1, 1)
+        self.transitions.fadeOut(4.0, blendType='easeIn')
+
 
 def main(floor=None):
     game = Game()
