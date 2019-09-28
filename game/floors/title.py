@@ -9,7 +9,8 @@ class Floor(FloorBase):
     sound_path = 'floors/title/sfx/'
     sound_names = [
         "fontflop",
-        "hobo_intro",
+        "hobo_intro1",
+        "hobo_intro2",
     ]
 
     def __init__(self, parent):
@@ -19,7 +20,14 @@ class Floor(FloorBase):
 
     def start(self):
         self.play('fontflop', ['logo'], sound=self.sfx['fontflop'])
-        self.play('entrance', ['hobot'], sound=self.sfx['hobo_intro'])
+        self.play('entrance', ['hobot'], to_frame=80, sound=self.sfx['hobo_intro1'], callback=self.on_stumble)
 
-    def check_interactions(self):
-        base.next_floor()
+    def on_stumble(self):
+        base.accept('enter', self.on_start)
+        base.accept('space', self.on_start)
+
+    def on_start(self):
+        base.ignore('enter')
+        base.ignore('space')
+        self.play('fontflop', ['logo'], sound=self.sfx['fontflop'])
+        self.play('entrance', ['hobot'], from_frame=80, callback=self.on_stumble, sound=self.sfx['hobo_intro2'])
