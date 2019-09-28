@@ -35,9 +35,9 @@ class Floor(FloorBase):
         self.small_hands = [actor.control_joint(None, 'modelRoot', 'hand-{}-s'.format(i)) for i in range(3)]
 
         # They all need to be set to 7:05 (which is 425 minutes)
-        self.set_time_now(0, 0, 425 - randint(3, 7) * 60)
-        self.set_time_now(1, 0, 425 - randint(1, 4) * 90)
-        self.set_time_now(2, 0, 425 - randint(2, 5) * 72)
+        self.set_time_now(0, 0, 425 - randint(1, 3) * 60 * 2)
+        self.set_time_now(1, 0, 425 - randint(1, 2) * 90 * 2)
+        self.set_time_now(2, 0, 425 - randint(1, 2) * 72 * 2)
 
         self.solved = False
 
