@@ -14,7 +14,7 @@ class Hobot:
         self.move_root = base.render.attach_new_node('hobot')
         self.anim_root = anim_root
 
-        self.model = Actor('hobot.bam')
+        self.model = Actor('hobot/hobot.bam')
 
         self.hand = self.model.expose_joint(None, 'modelRoot', 'hand')
         head = self.model.expose_joint(None, 'modelRoot', 'head')
