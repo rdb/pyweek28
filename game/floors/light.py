@@ -111,7 +111,6 @@ class Floor(FloorBase):
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
-        print(hobot_pos)
 
         if not self.solved and hobot_pos.y >= -0.24:
             if hobot_pos.x > -0.53 and hobot_pos.x < -0.3:
