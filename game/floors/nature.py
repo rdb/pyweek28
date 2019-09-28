@@ -10,6 +10,18 @@ class Floor(FloorBase):
     model_path = 'floors/nature/scene.bam'
     walkable_path = 'floors/nature/walkable.png'
     music_path = 'floors/nature/music.ogg'
+    sound_path = 'floors/nature/sfx/'
+    sound_names = [
+        "entrance",
+        "exit",
+        "fill_bucket",
+        "pump",
+        "grab_hook_plank",
+        "knock_get_bucket",
+        "tree_grow_0",
+        "tree_grow_1",
+        "tree_grow_2",
+    ]
 
     walkable_y_offset = 0.025
 
@@ -30,6 +42,10 @@ class Floor(FloorBase):
         actor.pose('tree_grow', 30, partName='tree')
         self.tree_frame = 30
 
+        self.sfx = {}
+        for s in self.sound_names:
+            self.sfx[s] = base.loader.loadSfx(self.sound_path + s + ".wav")
+
         self.hook_position = 'wall'
         self.bucket_position = 'plank'
         self.bucket_knocked = False
@@ -37,13 +53,16 @@ class Floor(FloorBase):
         self.water_count = 0
 
     def start(self):
-        self.play('entrance', ['hobot', 'entrance'])
+        self.play('entrance', ['hobot', 'entrance'], sound=self.sfx["entrance"])
+
 
     def pickup_hook(self):
         if self.hook_position == 'wall':
-            self.play('grab_hook_wall', ['hobot', 'hook'], callback=self.on_pickup_hook)
+            self.play('grab_hook_wall', ['hobot', 'hook'], callback=self.on_pickup_hook,
+                sound=self.sfx["grab_hook_plank"])
         elif self.hook_position == 'plank':
-            self.play('grab_hook_plank', ['hobot', 'hook'], callback=self.on_pickup_hook)
+            self.play('grab_hook_plank', ['hobot', 'hook'], callback=self.on_pickup_hook,
+                sound=self.sfx["grab_hook_plank"])
 
     def on_pickup_hook(self):
         self.hook_position = 'hobot'
@@ -52,7 +71,8 @@ class Floor(FloorBase):
 
     def knock_bucket(self):
         if self.hook_position == 'hobot':
-            self.play('knock_get_bucket', ['hobot', 'bucket', 'hook', 'plank'], callback=self.on_grab_bucket)
+            self.play('knock_get_bucket', ['hobot', 'bucket', 'hook', 'plank'], callback=self.on_grab_bucket,
+                sound=self.sfx["knock_get_bucket"])
             self.hook_position = 'plank'
             self.bucket_knocked = True
 
@@ -65,14 +85,15 @@ class Floor(FloorBase):
 
     def jump_tree(self):
         if self.hook_position == 'hobot':
-            self.play('exit', ['hobot', 'tree', 'hook'])
+            self.play('exit', ['hobot', 'tree', 'hook'], sound=self.sfx["exit"])
 
     def pump(self):
         if self.bucket_position == 'hobot':
-            self.play('fill_bucket', ['hobot', 'pump', 'bucket'])
+            self.play('fill_bucket', ['hobot', 'pump', 'bucket'],
+                sound=self.sfx["fill_bucket"])
             self.bucket_filled = True
         else:
-            self.play('pump', ['hobot', 'pump'])
+            self.play('pump', ['hobot', 'pump'], sound=self.sfx["pump"])
 
     def water_rock(self):
         if self.water_count >= TREE_WATER_COUNT:
@@ -95,10 +116,13 @@ class Floor(FloorBase):
         to_frame = self.tree_frame
         if self.water_count >= 2:
             to_frame = None
+            self.sfx["tree_grow_2"].play()
         elif self.water_count >= 1:
             to_frame = 80
+            self.sfx["tree_grow_1"].play()
         else:
             to_frame = 30
+            self.sfx["tree_grow_0"].play()
 
         if to_frame != self.tree_frame:
             print("Growing tree from frame {} to frame {}".format(self.tree_frame, to_frame))

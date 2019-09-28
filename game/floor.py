@@ -85,7 +85,7 @@ class FloorBase:#(FSM):
         self.shadow_actor.update()
         return self.shadow_hobot_root.get_pos()
 
-    def play(self, anim, parts=None, loop=False, extra_interval=None, from_frame=None, to_frame=None, callback=None, release_joint=None):
+    def play(self, anim, parts=None, loop=False, extra_interval=None, from_frame=None, to_frame=None, callback=None, release_joint=None, sound=None):
         if parts is None:
             print("Playing {} on all parts".format(anim))
         else:
@@ -107,6 +107,9 @@ class FloorBase:#(FSM):
 
             if extra_interval:
                 anims.append(extra_interval)
+
+            if sound:
+                anims.append(Func(sound.play))
 
             if callback is None:
                 callback = self.switch_to_free_hobot
