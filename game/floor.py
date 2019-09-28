@@ -65,6 +65,8 @@ class FloorBase:#(FSM):
         if self.music:
             self.music.stop()
         self.actor.remove_node()
+        for sound_name in self.sound_names:
+            self.sfx[sound_name].stop()
 
     def start(self):
         pass
