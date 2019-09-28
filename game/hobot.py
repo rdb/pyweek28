@@ -48,6 +48,11 @@ class Hobot:
         self.lightbulb.set_two_sided(True)
         self.lightbulb.hide()
 
+        self.ding_sfx = loader.load_sfx('hobot/sfx/ding.wav')
+        self.ding_sfx.set_volume(0.5)
+        self.move_sfx = loader.load_sfx('hobot/sfx/move.wav')
+        self.move_sfx.set_loop(True)
+
         self.action_callback = None
 
     def destroy(self):
@@ -55,7 +60,9 @@ class Hobot:
         self.model.cleanup()
 
     def set_action(self, callback):
-        self.action_callback = callback
+        if not self.action_callback:
+            self.ding_sfx.play()
+            self.action_callback = callback
         self.lightbulb.show()
 
     def clear_action(self):
@@ -118,9 +125,11 @@ class Hobot:
 
             if not self.move_control.playing:
                 self.move_control.loop(False)
+                self.move_sfx.play()
 
         elif self.move_control.playing:
             self.move_control.stop()
+            self.move_sfx.stop()
 
         if delta.length_squared() > 0:
             old_pos = self.model.get_pos()
