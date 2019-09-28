@@ -216,7 +216,7 @@ def optimize_geom(gnode, gi):
     vtx_reader = None
     uv_reader = None
 
-    if False and (0, 0) in uv_to_vtx and (1, 1) in uv_to_vtx:
+    if (0, 0) in uv_to_vtx and (1, 1) in uv_to_vtx:
         # Crop the card itself, making it smaller, reducing overdraw.
         card_pos = uv_to_vtx[(0, 0)]
         card_size = uv_to_vtx[(1, 1)] - uv_to_vtx[(0, 0)]

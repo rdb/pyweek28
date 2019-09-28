@@ -3,6 +3,9 @@ from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, Actor
 from ..floor import FloorBase
 
 
+TREE_WATER_COUNT = 2
+
+
 class Floor(FloorBase):
     model_path = 'nature_mergedhobot.bam'
     walkable_path = 'floors/nature/walkable.png'
@@ -13,29 +16,91 @@ class Floor(FloorBase):
         FloorBase.__init__(self, parent)
         actor = self.actor
 
-        self.play('entrance')
+        actor.make_subpart('pump', ['pump plunger', 'pump handle', 'drip'], overlapping=True)
+        actor.make_subpart('bucket', ['bucket', 'drip'], overlapping=True)
+        actor.make_subpart('plank', ['plank'])
+        actor.make_subpart('hook', ['hook'])
+        actor.make_subpart('tree', ['sapling', 'tree main', 'tree bottom bra', 'tree top', 'tree top branch', 'tree mid', 'tree shadow'])
+        actor.make_subpart('entrance', ['entrance cover'])
+        actor.make_subpart('sky', ['sky'])
 
-        actor.make_subpart('pump', ['pump plunger', 'pump handle', 'drip'])
-        actor.make_subpart('bucket', ['bucket'])
+        self.actor.pose('sky_scroll', 1, partName='sky')
+        self.play('entrance', ['hobot', 'entrance'])
 
-        self.hook_position = 'original'
-        self.holding_bucket = False
+        actor.pose('tree_grow', 30, partName='tree')
+        self.tree_frame = 30
+
+        self.hook_position = 'wall'
+        self.bucket_position = 'plank'
+        self.bucket_knocked = False
+        self.bucket_filled = False
+        self.water_count = 0
 
     def pickup_hook(self):
-        self.play('grab_hook_wall')
+        if self.hook_position == 'wall':
+            self.play('grab_hook_wall', ['hobot', 'hook'], callback=self.on_pickup_hook)
+        elif self.hook_position == 'plank':
+            self.play('grab_hook_plank', ['hobot', 'hook'], callback=self.on_pickup_hook)
+
+    def on_pickup_hook(self):
         self.hook_position = 'hobot'
+        self.grab_joint('hook')
+        self.switch_to_free_hobot()
 
     def knock_bucket(self):
-        self.play('knock_get_bucket')
+        if self.hook_position == 'hobot':
+            self.play('knock_get_bucket', ['hobot', 'bucket', 'hook', 'plank'], callback=self.on_grab_bucket)
+            self.hook_position = 'plank'
+            self.bucket_knocked = True
+
+    def on_grab_bucket(self):
+        if self.carrying_joint_name == 'hook':
+            self.release_joint('hook')
+        self.bucket_position = 'hobot'
+        self.grab_joint('bucket')
+        self.switch_to_free_hobot()
 
     def jump_tree(self):
-        self.play('exit')
+        if self.hook_position == 'hobot':
+            self.play('exit', ['hobot', 'tree', 'hook'])
 
     def pump(self):
-        if self.holding_bucket:
-            self.play('fill_bucket', ['pump', 'hobot', 'bucket'])
+        if self.bucket_position == 'hobot':
+            self.play('fill_bucket', ['hobot', 'pump', 'bucket'])
+            self.bucket_filled = True
         else:
-            self.play('pump', ['pump', 'hobot'])
+            self.play('pump', ['hobot', 'pump'])
+
+    def water_rock(self):
+        if self.water_count >= TREE_WATER_COUNT:
+            return
+
+        self.water_count += 1
+        extra_interval = Sequence(Wait(1.0), Func(self.grow_tree))
+        if self.water_count >= TREE_WATER_COUNT:
+            self.play('water_rock_last', ['hobot', 'bucket'], extra_interval=extra_interval, callback=self.on_drop_bucket)
+        else:
+            self.play('water_rock_repeat', ['hobot', 'bucket'], extra_interval=extra_interval)
+        self.bucket_filled = False
+
+    def on_drop_bucket(self):
+        self.release_joint('bucket')
+        self.bucket_position = 'tree'
+        self.switch_to_free_hobot()
+
+    def grow_tree(self):
+        to_frame = self.tree_frame
+        if self.water_count >= 2:
+            to_frame = None
+        elif self.water_count >= 1:
+            to_frame = 80
+        else:
+            to_frame = 30
+
+        if to_frame != self.tree_frame:
+            print("Growing tree from frame {} to frame {}".format(self.tree_frame, to_frame))
+            self.play('tree_grow', ['tree'], from_frame=self.tree_frame, to_frame=to_frame)
+            self.tree_frame = to_frame
 
     def adjust_move(self, pos, delta, slide=True):
         if slide and pos[0] < 0:
@@ -50,13 +115,17 @@ class Floor(FloorBase):
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()
 
-        if self.hook_position == 'original' and hobot_pos.y > -0.33 and hobot_pos.x > 0 and hobot_pos.x < 0.1:
+        if self.hook_position == 'wall' and hobot_pos.y > -0.33 and hobot_pos.x > 0 and hobot_pos.x < 0.1:
             self.hobot.set_action(self.pickup_hook)
-        elif hobot_pos.x < -0.14 and hobot_pos.x > -0.33 and hobot_pos.y > -0.32:
+        elif self.water_count >= TREE_WATER_COUNT and self.hook_position == 'hobot' and hobot_pos.x < -0.14 and hobot_pos.x > -0.35 and hobot_pos.y > -0.32:
             self.hobot.set_action(self.jump_tree)
-        elif hobot_pos.x > 0.4 and hobot_pos.y > -0.37 and hobot_pos.x < 0.6:
+        elif hobot_pos.x > 0.4 and hobot_pos.y > -0.37 and hobot_pos.x < 0.6 and self.hook_position != 'hobot' :
             self.hobot.set_action(self.pump)
-        elif hobot_pos.x < -0.65:
+        elif hobot_pos.x < -0.65 and self.hook_position == 'hobot' and not self.bucket_knocked and self.bucket_position != 'hobot':
             self.hobot.set_action(self.knock_bucket)
+        elif hobot_pos.x < -0.65 and self.hook_position == 'plank' and self.bucket_position != 'hobot':
+            self.hobot.set_action(self.pickup_hook)
+        elif self.bucket_position == 'hobot' and self.bucket_filled and hobot_pos.x < -0.3 and hobot_pos.x > -0.55 and hobot_pos.y > -0.32:
+            self.hobot.set_action(self.water_rock)
         else:
             self.hobot.clear_action()

@@ -1,7 +1,7 @@
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, ActorInterval
 #from direct.fsm.FSM import FSM
-from panda3d.core import PNMImage, Filename, Vec2
+from panda3d.core import PNMImage, Filename, Vec2, TransformState
 
 from .hobot import Hobot
 
@@ -36,7 +36,29 @@ class FloorBase:#(FSM):
         actor.pose('entrance', 0)
 
         self.hobot_root = actor.expose_joint(None, 'modelRoot', 'hobot root')
+        self.hobot_hand = actor.expose_joint(None, 'modelRoot', 'hand')
         self.hobot = Hobot(self.hobot_root)
+
+        self.carrying_joint = None
+        self.carrying_joint_name = None
+
+    def grab_joint(self, name):
+        print("Grabbing {}".format(name))
+        self.carrying_joint_name = name
+        self.hobot.model.set_pos(self.hobot.anim_root.get_pos())
+        transform = self.actor.get_joint_transform_state('modelRoot', name)
+
+        parent = self.actor.attach_new_node('parent')
+        self.carrying_joint = self.actor.control_joint(parent.attach_new_node('joint'), 'modelRoot', name)
+        self.carrying_joint.set_transform(transform)
+        self.carrying_joint_initial_transform = transform
+        self.carrying_joint_initial_hobot_hand_pos = self.hobot.hand.get_pos(self.actor)
+
+    def release_joint(self, name):
+        print("Releasing {}".format(name))
+        self.actor.release_joint('modelRoot', name)
+        self.carrying_joint = None
+        self.carrying_joint_name = None
 
     def get_anim_starting_hobot_pos(self, anim):
         # Returns Hobot's starting position for a given animation.
@@ -44,7 +66,7 @@ class FloorBase:#(FSM):
         self.shadow_actor.update()
         return self.shadow_hobot_root.get_pos()
 
-    def play(self, anim, parts=None, loop=False, extra_interval=None):
+    def play(self, anim, parts=None, loop=False, extra_interval=None, from_frame=None, to_frame=None, callback=None, release_joint=None):
         if parts is None:
             print("Playing {} on all parts".format(anim))
         else:
@@ -62,16 +84,19 @@ class FloorBase:#(FSM):
 
             anims = []
             for part in parts or (None,):
-                anims.append(ActorInterval(self.actor, anim, partName=part))
+                anims.append(ActorInterval(self.actor, anim, startFrame=from_frame, endFrame=to_frame, partName=part))
 
             if extra_interval:
                 anims.append(extra_interval)
+
+            if callback is None:
+                callback = self.switch_to_free_hobot
 
             seq = Sequence(
                 self.hobot.model.posInterval(time, hobot_pos, blendType='easeInOut'),
                 Func(self.switch_to_scene_hobot),
                 Parallel(*anims),
-                Func(self.switch_to_free_hobot))
+                Func(callback))
 
             if loop:
                 seq.loop()
@@ -79,22 +104,25 @@ class FloorBase:#(FSM):
                 seq.start()
         elif loop:
             if not parts:
-                self.actor.loop(anim)
+                self.actor.loop(anim, fromFrame=from_frame, toFrame=to_frame)
             else:
                 for part in parts:
-                    self.actor.loop(anim, partName=part)
+                    self.actor.loop(anim, fromFrame=from_frame, toFrame=to_frame, partName=part)
         else:
             if not parts:
                 self.actor.play(anim)
             else:
                 for part in parts:
-                    self.actor.play(anim, partName=part)
+                    self.actor.play(anim, fromFrame=from_frame, toFrame=to_frame, partName=part)
 
     def switch_to_scene_hobot(self):
         self.hobot.lock()
         self.hobot.model.hide()
         self.hobot.lightbulb.hide()
         self.actor.release_joint('modelRoot', 'hobot root')
+        if self.carrying_joint_name and self.carrying_joint:
+            self.actor.release_joint('modelRoot', self.carrying_joint_name)
+            self.carrying_joint = None
 
     def switch_to_free_hobot(self):
         self.hobot.face(self.hobot_root.get_sz() * -1)
@@ -102,6 +130,8 @@ class FloorBase:#(FSM):
         bone = self.actor.control_joint(None, 'modelRoot', 'hobot root')
         bone.set_pos(-100, -100, -100)
         self.hobot.unlock()
+        if self.carrying_joint_name and not self.carrying_joint:
+            self.grab_joint(self.carrying_joint_name)
 
     def adjust_move(self, pos, delta, slide=True):
         x = (pos[0] + 16/9/2) * (9/16.0) * self.walk_map.size.x
@@ -166,6 +196,10 @@ class FloorBase:#(FSM):
         if self.hobot.locked:
             return
         self.hobot.process_input(input, dt, self)
+
+        if self.carrying_joint:
+            pos = self.hobot.hand.get_pos(self.actor) - self.carrying_joint_initial_hobot_hand_pos
+            self.carrying_joint.set_transform(TransformState.make_pos((0, pos[1], -pos[0])).compose(self.carrying_joint_initial_transform))
 
         self.check_interactions()
 

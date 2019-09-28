@@ -15,12 +15,13 @@ class Hobot:
         self.anim_root = anim_root
 
         self.model = Actor('hobot.bam')
-        root_bone = self.model.expose_joint(None, 'modelRoot', 'hobot root')
+
+        self.hand = self.model.expose_joint(None, 'modelRoot', 'hand')
+        head = self.model.expose_joint(None, 'modelRoot', 'head')
 
         self.model.reparent_to(self.anim_root)
         self.model.set_two_sided(True)
-        self.model.set_transform(root_bone.get_transform().get_inverse())
-        self.model.flatten_strong()
+        self.model.find("**/+GeomNode").set_transform(self.model.get_joint_transform_state('modelRoot', 'hobot root').get_inverse())
         self.model.set_z(0.1)
         self.facing = 1.0
 
@@ -31,8 +32,6 @@ class Hobot:
 
         self.model.wrt_reparent_to(self.move_root)
         self.model.hide()
-
-        head = self.model.expose_joint(None, 'modelRoot', 'head')
 
         light_texture = loader.load_texture('hobot/light_on.png')
         light_texture.set_wrap_u(core.SamplerState.WM_clamp)
