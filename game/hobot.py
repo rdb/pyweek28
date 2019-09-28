@@ -56,6 +56,10 @@ class Hobot:
         self.action_callback = None
 
     def destroy(self):
+        if self.move_control.playing:
+            self.move_control.stop()
+            self.move_sfx.stop()
+
         # RIP hobot :-(
         self.model.cleanup()
 
