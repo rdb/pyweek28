@@ -53,10 +53,45 @@ class Game(ShowBase):
         self.input_clock.set_mode(core.ClockObject.M_limited)
         self.input_clock.set_frame_rate(60.0)
 
+        base.accept('alt-enter', self.toggle_fullscreen)
+        base.accept('f11', self.toggle_fullscreen)
+        base.accept('f12', self.screenshot)
+
         self.floor = None
         self.floor_index = -1
         self.transitions.IrisModelName = 'ui/iris.egg'
         self.transitions.fadeOut(0)
+
+        self.stored_win_size = (1280, 800)
+
+    def toggle_fullscreen(self):
+        props = self.win.get_properties()
+        if props.fullscreen:
+            wp = core.WindowProperties()
+            wp.size = self.stored_win_size
+            wp.fullscreen = False
+            self.win.request_properties(wp)
+        else:
+            info = self.pipe.get_display_information()
+
+            wp = core.WindowProperties()
+            if self.find_display_mode(info, 1920, 1080):
+                wp.size = (1920, 1080)
+            else:
+                wp.size = (self.pipe.get_display_width(), self.pipe.get_display_height())
+
+            wp.fullscreen = True
+            self.win.request_properties(wp)
+
+    def find_display_mode(self, info, width, height):
+        if not info:
+            return False
+
+        for mode in info.get_display_modes():
+            if mode.width == width and mode.height == height:
+                return True
+
+        return False
 
     def input_task(self, task):
         dt = self.input_clock.dt

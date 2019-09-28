@@ -3,6 +3,7 @@ textures-power-2 none
 
 # Center the window
 win-origin -2 -2
+win-size 1280 800
 
 # sRGB
 framebuffer-srgb true
@@ -16,8 +17,8 @@ view-frustum-cull false
 # Smoother animations
 interpolate-frames false
 
-
-show-frame-rate-meter true
+# FPS meter
+show-frame-rate-meter false
 
 #notify-level-chan info
 #notify-level-char info

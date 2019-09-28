@@ -9,6 +9,9 @@ To run the game, run:
 
 The only keys you need are the arrow keys and the enter key.
 
+To toggle windowed/fullscreen, press alt+enter or F11.  To make a screenshot,
+press F12.
+
 Acknowledgements
 ================
 
