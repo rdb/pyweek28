@@ -19,8 +19,8 @@ class FloorBase:#(FSM):
         actor = Actor(self.model_path)
         actor.set_two_sided(True)
         actor.reparent_to(parent)
-        print(actor.get_anim_names())
-        actor.list_joints()
+        #print(actor.get_anim_names())
+        #actor.list_joints()
         self.actor = actor
         self.actor.hide()
 
