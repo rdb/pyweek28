@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='hobots-ascent',
-    version='1.0.0',
+    version='1.0.1',
     options={
         'build_apps': {
             'include_patterns': {
