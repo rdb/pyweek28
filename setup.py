@@ -24,6 +24,9 @@ setup(
             'gui_apps': {
                 'run_game': 'run_game.py',
             },
+            'icons': {
+                'run_game': ['icon-256.png'],
+            },
             'log_filename': "$USER_APPDATA/Hobot's Ascent/output.log",
             'log_append': False,
             'plugins': [

@@ -5,6 +5,7 @@ textures-power-2 none
 win-origin -2 -2
 win-size 1280 800
 window-title Hobot's Ascent
+icon-filename $MAIN_DIR/assets/icon.ico
 
 # sRGB
 framebuffer-srgb true
