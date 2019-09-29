@@ -289,7 +289,7 @@ class FloorBase:#(FSM):
 
         if self.carrying_joint:
             pos = self.hobot.hand.get_pos(self.actor) - self.carrying_joint_initial_hobot_hand_pos
-            self.carrying_joint.set_transform(TransformState.make_pos((0, pos[1], -pos[0])).compose(self.carrying_joint_initial_transform))
+            self.carrying_joint.set_transform(TransformState.make_pos((self.hobot.model.get_z(), pos[1], -pos[0])).compose(self.carrying_joint_initial_transform))
 
         self.check_interactions()
 
