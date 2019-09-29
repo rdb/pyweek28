@@ -20,7 +20,7 @@ from game import main
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) >= 2:
+    if len(sys.argv) >= 2 and not sys.argv[1].startswith('-'):
         main(sys.argv[1])
     else:
         main()
