@@ -107,7 +107,7 @@ class Floor(FloorBase):
         self.elevator_down = True
 
     def ride_elevator_up(self):
-        self.play('exit', ['hobot', 'elevator'], callback=base.next_floor, sound=self.sfx["exit"])
+        self.play('exit', ['hobot', 'elevator'], extra_interval=Sequence(Wait(3.0), Func(self.hide_scene_hobot)), callback=base.next_floor, sound=self.sfx["exit"])
 
     def check_interactions(self):
         hobot_pos = self.hobot.model.get_pos()

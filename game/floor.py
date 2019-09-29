@@ -219,6 +219,10 @@ class FloorBase:#(FSM):
         if self.carrying_joint_name and not self.carrying_joint:
             self.grab_joint(self.carrying_joint_name)
 
+    def hide_scene_hobot(self):
+        print("Hiding hobot")
+        self.actor.control_joint(None, 'modelRoot', 'hobot root').set_z(-10000)
+
     def adjust_move(self, pos, delta, slide=True):
         x = (pos[0] + 16/9/2) * (9/16.0) * self.walk_map.size.x
         y = -(pos[1] - self.walkable_y_offset) * 2 * self.walk_map.size.y
