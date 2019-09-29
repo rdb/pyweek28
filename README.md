@@ -1,5 +1,4 @@
-Hobot's Ascent
-==============
+![Hobot's Ascent](logo.png)
 
 This game is made for [PyWeek 28](https://pyweek.org/) "Tower".
 
