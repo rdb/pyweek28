@@ -22,6 +22,8 @@ Programming by [@rdb](https://github.com/rdb)
 
 Music and sound effects by [@momojohobo](https://github.com/momojohobo)
 
+Download the music for free [here](https://hendrik-jan.bandcamp.com/album/hobots-ascent-original-soundtrack)
+
 Raw source textures from https://free-images.com/ in the public domain.
 
 Raw sound effects from https://freesound.org/ in the public domain.
@@ -33,4 +35,4 @@ Many thanks to lordmauve for facilitating PyWeek and to all the other participan
 License
 =======
 
-This code is placed in the public domain.
+All code, art, music and sound is placed in the public domain.
