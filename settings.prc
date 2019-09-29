@@ -4,6 +4,7 @@ textures-power-2 none
 # Center the window
 win-origin -2 -2
 win-size 1280 800
+window-title Hobot's Ascent
 
 # sRGB
 framebuffer-srgb true
