@@ -185,7 +185,10 @@ class Floor(FloorBase):
         else:
             self.hobot.model.set_z(15)
 
-        if hobot_pos.y > -0.31:
+        if self.airflow and hobot_pos.y > -0.35 and hobot_pos.y < -0.29 and hobot_pos.x > 0.13 and hobot_pos.x < 0.31:
+            self.hobot.clear_action()
+            self.finish()
+        elif hobot_pos.y > -0.31:
             closest_valve = None
             closest_valve_dist = 1000
 
@@ -203,8 +206,5 @@ class Floor(FloorBase):
             return
         elif hobot_pos.y > -0.4 and hobot_pos.x > 0.54:
             self.hobot.set_action(lambda: self.toggle_valve(0))
-        elif self.airflow and hobot_pos.y > -0.35 and hobot_pos.x > 0.13 and hobot_pos.x < 0.31:
-            self.hobot.clear_action()
-            self.finish()
         else:
             self.hobot.clear_action()
