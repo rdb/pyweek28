@@ -66,6 +66,7 @@ class Hobot:
         self.shadow_fade = None
 
         self.ding_sfx = loader.load_sfx('hobot/sfx/ding.wav')
+        self.ding_sfx.set_volume(0.5)
         self.move_sfx = loader.load_sfx('hobot/sfx/move.wav')
         self.move_sfx.set_loop(True)
 
