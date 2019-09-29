@@ -1,4 +1,4 @@
-![Hobot's Ascent](logo.png)
+<a href="https://pyweek.org/e/mysteryplanet/" title="Hobot's Ascent"><img src="https://raw.githubusercontent.com/rdb/pyweek28/master/logo.png" align="middle" width="407" /></a>
 
 This game is made for [PyWeek 28](https://pyweek.org/) "Tower".
 
