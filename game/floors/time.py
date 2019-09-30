@@ -83,8 +83,6 @@ class Floor(FloorBase):
         minutes = int(minutes)
         print("Clock {} set to {: >2d}:{:02d}".format(clock, minutes // 60 if minutes else 12, minutes % 60))
 
-        # 1:37 and 7:05 are both acceptable for the first clock.
-
     def set_time_now(self, clock, hours, minutes):
         self.set_time(clock, hours, minutes)
 
