@@ -2,8 +2,6 @@ from direct.interval.IntervalGlobal import Sequence, Parallel, Func, Wait, Actor
 
 from ..floor import FloorBase
 
-SONG_DELAY = 10.0
-
 
 class Floor(FloorBase):
     model_path = 'floors/bells/scene.bam'
@@ -37,7 +35,6 @@ class Floor(FloorBase):
         # Contains last four bells that Hobot smacked
         self.sequence = ()
         self.cube_landed = False
-        self.song_delay = globalClock.frame_time
 
         self.cube_idle_loop = Sequence(
             ActorInterval(self.actor, 'cube idle', partName='cube'),
@@ -56,7 +53,6 @@ class Floor(FloorBase):
     def smack_bell(self, bell):
         self.sequence = self.sequence[-3:] + (bell,)
         anim_name = 'bell{}_smack'.format(bell)
-        self.song_delay = globalClock.frame_time
 
         if self.sequence == (1, 3, 0, 2):
             callback = self.on_good_bell_smacking
